@@ -7,7 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 
 class LungDataset(Dataset):
     '''
-    CS5242 Final Project Dataset Loader.
+    CS5242 Final Project Dataset (Images look like lung X-ray images).
 
     - Docs: https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset
     - Tutorial: https://pytorch.org/tutorials/beginner/data_loading_tutorial.html#dataset-class
