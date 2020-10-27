@@ -46,21 +46,28 @@ def LoadTrainingData(csv_file, image_dir, transform=None, split=True, train_perc
     Validation dataset does not have transformations.
     - split: True/False, randomly split to training and validation datasets.
     - train_percent: fraction of training data, train_percent/100 {default: 85}
-    - val_transform: transform for validation set.
+                     `train_size = (number_of_samples * train_percent)//100`.
+    - val_transform (callable): transform for validation set (e.g. Convert to tensor, normalise etc.).
     '''
     label_id_pairs = pd.read_csv(csv_file).values
-    train_label_id_pairs = label_id_pairs
     datasets = {}
     if split:
         IDs_shuffled = np.random.permutation(label_id_pairs.shape[0])
-        train_size = label_id_pairs.shape[0]*85//100
+        train_size = label_id_pairs.shape[0]*train_percent//100
         # val_size   = label_id_pairs.shape[0] - train_size
+
+        # split dataset
         train_label_id_pairs = label_id_pairs[IDs_shuffled[:train_size],:]
         val_label_id_pairs = label_id_pairs[IDs_shuffled[train_size:],:]
 
+        # Validation data
         datasets['val'] = DatasetFromArray(val_label_id_pairs, image_dir, transform=val_transform)
+    else:
+        train_label_id_pairs = label_id_pairs
 
+    # Training data
     datasets['train'] = DatasetFromArray(train_label_id_pairs, image_dir, transform=transform)
+
     return datasets
 
 
