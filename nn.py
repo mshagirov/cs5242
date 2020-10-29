@@ -7,11 +7,13 @@ import copy
 import torch
 
 def train_model(model,
-                loss_func,
                 optimizer,
                 data_loaders,
-                device=torch.device('cpu'),
-                num_epochs=5, scheduler=None):
+                num_epochs = 5,
+                loss_func = torch.nn.CrossEntropyLoss(),
+                device = torch.device('cpu'),
+                scheduler = None,
+                return_best = False):
     '''
     Multiclass classifier (single label) trainer.
     
@@ -24,17 +26,27 @@ def train_model(model,
     - device: torch.device, either CUDA or CPU {default: torch.device('cpu')}.
     - num_epochs: total number of epochs to train.
     - scheduler: learning rate scheduler (from torch.optim.lr_scheduler)
-    
+    - return_best: return the best model in the end of the training instead of the latest model
+                  (performance is measured on the validation set) {default: False}. Best validation set
+                  accuracy is always measured and tracked regardless of this argument.
+    - returns: model, and dict of losses and accuracies ("curve_data").
     '''
     # model states/modes
     model_states = ['train', 'val']
     
+    curve_data = {'trainLosses':[],
+                 'trainAccs':[],
+                 'valLosses':[],
+                 'valAccs':[],
+                 'total_epochs':num_epochs}
+    
     time_start = time.time()
-    best_model_wts = copy.deepcopy(model.state_dict())
+    if return_best:
+        best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
     
     for epoch in range(num_epochs):
-        print(f'Epoch {epoch}/{num_epochs - 1}'+'-'*10)
+        print(f'Epoch {epoch}/{num_epochs - 1} ---', end=' ')
         
         # set model state depending on training/eval stage
         for state in model_states:
@@ -42,53 +54,58 @@ def train_model(model,
                 model.train()  # Set model to training mode
             else:
                 model.eval()   # Set model to evaluation mode
-
+            
             running_loss = 0.0
             running_corrects = 0
-
-            # Iterate over data.
-            for inputs, labels in dataloaders[state]:
-                inputs = inputs.to(device)
-                labels = labels.to(device)
-
-                # zero the parameter gradients
+            
+            for samples in data_loaders[state]:
+                # input HxW depend on transform function(s), 3 Channels
+                inputs = samples['image'].to(device)
+                # labels \in [0, 1, 2]
+                labels = samples['label'].to(device)          
+                
+                # set grad accumulator to zero
                 optimizer.zero_grad()
 
-                # forward
-                # track history if only in train
                 with torch.set_grad_enabled(state == 'train'):
-                    outputs = model(inputs)
-                    _, preds = torch.max(outputs, 1)
-                    loss = loss_func(outputs, labels)
-
-                    # backward + optimize only if in training phase
-                    if phase == 'train':
+                    # grad tracking is disabled in "eval" mode
+                    outputs = model(inputs) # output:(batch, #classes)
+                    _, preds = torch.max(outputs, 1) # labels:(batch,)
+                    loss = loss_func(outputs, labels) #<-torch.nn.CrossEntropyLoss
+                    
+                    if state == 'train':
                         loss.backward()
                         optimizer.step()
 
                 # statistics
-                running_loss += loss.item() * inputs.size(0)
-                running_corrects += torch.sum(preds == labels.data)
-            if phase == 'train' and scheduler!=None:
+                running_loss += loss.item() * inputs.size(0) # weighted loss
+                running_corrects += torch.sum(preds == labels.detach() )
+            
+            # (end of epoch) apply LR schedule
+            if state == 'train' and scheduler!=None:
                 scheduler.step()
 
-            epoch_loss = running_loss / dataset_sizes[phase]
-            epoch_acc = running_corrects.double() / dataset_sizes[phase]
-
-            print('{} Loss: {:.4f} Acc: {:.4f}'.format(
-                phase, epoch_loss, epoch_acc))
-
+            epoch_loss = running_loss / len(data_loaders[state].dataset)
+            epoch_acc = running_corrects.double() / len(data_loaders[state].dataset)
+            
+            curve_data[f'{state}Losses'].append(epoch_loss)
+            curve_data[f'{state}Accs'].append(epoch_acc)
+            
+            print(f'{state} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}',end=' || ')
+            
             # deep copy the model
-            if phase == 'val' and epoch_acc > best_acc:
+            if state == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
-                best_model_wts = copy.deepcopy(model.state_dict())
-
-        print()
-
+                if return_best:
+                    # keep best weights to return
+                    best_model_wts = copy.deepcopy(model.state_dict())
+        print(f'{time.time() - time_start:.0f}s')
     time_elapsed = time.time() - time_start
     print(f'Training complete in {time_elapsed//60:.0f}m {time_elapsed % 60:.0f}s')
-    print('Best val Acc: {:4f}'.format(best_acc))
-
-    # load best model weights
-    model.load_state_dict(best_model_wts)
-    return model
+    print(f'Best val Acc: {best_acc:4f} (return best:{return_best})')
+    
+    if return_best:
+        # load best model weights
+        model.load_state_dict(best_model_wts)
+    
+    return model, curve_data
