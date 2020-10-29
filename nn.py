@@ -6,34 +6,48 @@ import time
 import copy
 import torch
 
-
-def train_model(model, loss_func, optimizer, num_epochs=5, scheduler=None):
+def train_model(model,
+                loss_func,
+                optimizer,
+                data_loaders,
+                device=torch.device('cpu'),
+                num_epochs=5, scheduler=None):
     '''
+    Multiclass classifier (single label) trainer.
+    
     Arg-s:
-    - model : model to be trained (already initialized torch.nn.Module object)
+    - model : model to be trained (an already initialized torch.nn.Module object)
     - loss_func: loss function (to be used as a criterion)
-    - optimizer: optimizer (torch.optim)
+    - optimizer: optimizer (e.g. torch.optim.SGD)
+    - data_loaders: data loaders (dict of torch.utils.data.DataLoader objects) with
+                    keys 'train' and 'val', for training and validation data loaders respectively.
+    - device: torch.device, either CUDA or CPU {default: torch.device('cpu')}.
+    - num_epochs: total number of epochs to train.
+    - scheduler: learning rate scheduler (from torch.optim.lr_scheduler)
     
     '''
+    # model states/modes
+    model_states = ['train', 'val']
+    
     time_start = time.time()
-
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
-
+    
     for epoch in range(num_epochs):
         print(f'Epoch {epoch}/{num_epochs - 1}'+'-'*10)
         
-        for phase in ['train', 'eval']:
-            if phase == 'train':
+        # set model state depending on training/eval stage
+        for state in model_states:
+            if state == 'train':
                 model.train()  # Set model to training mode
             else:
-                model.eval()   # Set model to evaluate mode
+                model.eval()   # Set model to evaluation mode
 
             running_loss = 0.0
             running_corrects = 0
 
             # Iterate over data.
-            for inputs, labels in dataloaders[phase]:
+            for inputs, labels in dataloaders[state]:
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
@@ -42,10 +56,10 @@ def train_model(model, loss_func, optimizer, num_epochs=5, scheduler=None):
 
                 # forward
                 # track history if only in train
-                with torch.set_grad_enabled(phase == 'train'):
+                with torch.set_grad_enabled(state == 'train'):
                     outputs = model(inputs)
                     _, preds = torch.max(outputs, 1)
-                    loss = criterion(outputs, labels)
+                    loss = loss_func(outputs, labels)
 
                     # backward + optimize only if in training phase
                     if phase == 'train':
