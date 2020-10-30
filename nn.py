@@ -81,9 +81,9 @@ def train_model(model,
                 running_loss += loss.item() * inputs.size(0) # weighted loss
                 running_corrects += torch.sum(preds == labels.detach() )
             
-            # (end of epoch) apply LR schedule
-            if state == 'train' and scheduler!=None:
-                scheduler.step()
+                # apply LR schedule
+                if state == 'train' and scheduler!=None:
+                    scheduler.step()
 
             epoch_loss = running_loss / len(data_loaders[state].dataset)
             epoch_acc = running_corrects.double() / len(data_loaders[state].dataset)
