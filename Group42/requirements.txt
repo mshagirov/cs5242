@@ -1,0 +1,12 @@
+## Requirements
+### Python version
+python3.7
+
+### Packages
+jupyter # (optional)
+numpy==1.18.1
+pytorch==1.7.0
+torchvision==0.8.1
+pandas==1.0.3
+skimage==0.17.2
+matplotlib==3.2.0
