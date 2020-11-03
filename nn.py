@@ -16,7 +16,8 @@ def train_model(model,
                 loss_func = torch.nn.CrossEntropyLoss(),
                 device = torch.device('cpu'),
                 scheduler = None,
-                return_best = False):
+                return_best = False,
+               classifier=None):
     '''
     Multiclass classifier (single label) trainer.
     
@@ -36,6 +37,9 @@ def train_model(model,
     '''
     # model states/modes
     model_states = ['train', 'val']
+    training_model=model
+    if classifier!=None:
+        training_model=classifier # transfer learning
     
     curve_data = {'trainLosses':[],
                  'trainAccs':[],
@@ -54,9 +58,9 @@ def train_model(model,
         # set model state depending on training/eval stage
         for state in model_states:
             if state == 'train':
-                model.train()  # Set model to training mode
+                training_model.train()  # Set model to training mode
             else:
-                model.eval()   # Set model to evaluation mode
+                training_model.eval()   # Set model to evaluation mode
             
             running_loss = 0.0
             running_corrects = 0
