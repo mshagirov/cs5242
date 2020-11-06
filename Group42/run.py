@@ -147,7 +147,7 @@ else:
 pred_labels = predict_test(test_path, model_ft, test_transform, batch_size=4, device=device)
 
 # Write to csv file:
-print('Saving test.csv')
+print('\nSaving test_result.csv\n')
 preds_df = pd.DataFrame(data=pred_labels).sort_values('ID') # to pd.DataFrame
 preds_df.set_index('ID').to_csv(path.join('.','test_result.csv'),sep=',')
 

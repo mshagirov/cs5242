@@ -62,6 +62,7 @@ Found 292 images in test dataset folder: ../datasets/test_data
 
 Processing 73 test batches in total (batch_size=4).
 Done.
+Saving test_result.csv
 ```
 
 ## Files
