@@ -52,7 +52,7 @@ models_path = './' # path : str
 model_fname = 'densenet121_ft_512px_v2.pkl' # file name for desired model : str
 
 # !!! Path to directory with test dataset images !!!
-test_path = './datasets/test_image/test_image/' # : str
+test_path = '../datasets/test_image/test_image/' # : str
 
 # ===================================================== #
 
