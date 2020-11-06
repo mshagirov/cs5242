@@ -8,8 +8,8 @@
 # *Murat Shagirov*
 
 from os import path
-import glob
 import numpy as np
+import glob
 import pandas as pd
 from skimage.io import imread
 
