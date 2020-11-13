@@ -3,7 +3,8 @@
 ---
 > GROUP 42: CS 5242 Final Project Code
 
-*Author: Murat Shagirov*
+*Members*:
+- Murat Shagirov*
 
 ## Requirements
 ### Python version
