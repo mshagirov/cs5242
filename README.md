@@ -83,5 +83,5 @@ Group42/
 ```
 
 ## Notebooks
-Run notebooks in oder (0, 1, 2) to explore the dataset, to finetune pre-trained models, and to predict test set results. Alternatively, edit provided scripts to train and predict test set labels in `./code/` (see below).
+Run notebooks in oder (0, 1, 2) to explore the dataset, to finetune pre-trained models, and to predict test set results. Alternatively, edit provided scripts to train and predict test set labels in `./code/`.
 
