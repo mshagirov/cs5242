@@ -1,9 +1,9 @@
 ---
 # CS5242
 ---
-> GROUP 42: CS 5242 Final Project Code
+> CS 5242 Final Project Code
 
-*Member(s)*: Murat Shagirov.
+*Author: Murat Shagirov*.
 
 ## Requirements
 ### Python version
