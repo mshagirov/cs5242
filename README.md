@@ -1,7 +1,7 @@
 ---
-# CS5242
+# CS5242 Final Project
 ---
-> CS 5242 Final Project Code
+> Fine-tuning denseNet121 multi-class classifier on "medical images" dataset (dataset is provided by the instructor).
 
 *Author: Murat Shagirov*.
 
