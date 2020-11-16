@@ -70,7 +70,6 @@ Saving test_result.csv
 ./
     README.md
     run.py
-    ckp/
     code/
         0_dataset.ipynb
         1_training_densenet.ipynb
