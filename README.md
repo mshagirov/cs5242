@@ -67,7 +67,7 @@ Saving test_result.csv
 
 ## Files
 ```
-Group42/
+./
     README.md
     run.py
     ckp/
